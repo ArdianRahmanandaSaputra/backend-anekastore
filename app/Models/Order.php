@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Ramsey\Uuid\Uuid;
 
 class Order extends Model
 {
@@ -17,6 +18,15 @@ class Order extends Model
         'status_pembayaran',
         'snap_token'
     ];
+
+    public $incrementing = false;
+
+    public static function boot(){
+        parent::boot();
+        static::creating(function($model){
+            $model->id = Uuid::uuid4()->toString();
+        });
+    }
 
     public function orderdetails(){
         return $this->hasMany(OrderDetail::class, 'order_id');
