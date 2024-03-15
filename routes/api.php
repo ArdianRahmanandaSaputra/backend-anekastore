@@ -40,6 +40,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // API route for logout user
     Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
 
+    // API Route for report
+    Route::post('/report', [App\Http\Controllers\Api\ReportController::class, 'generate']);
+
     // Route::get('/category', [App\Http\Controllers\Api\CategoryController::class, 'index']);
     Route::post('/category-save', [App\Http\Controllers\Api\CategoryController::class, 'save']);
     Route::post('/category-delete', [App\Http\Controllers\Api\CategoryController::class, 'delete']);
@@ -49,7 +52,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Route::get('/product', [App\Http\Controllers\Api\ProductController::class, 'index']);
     Route::post('/product-save', [App\Http\Controllers\Api\ProductController::class, 'save']);
     Route::post('/product-delete', [App\Http\Controllers\Api\ProductController::class, 'delete']);
-    Route::get('/product-view/{id}', [App\Http\Controllers\Api\ProductController::class, 'view']);
     Route::post('/product-update', [App\Http\Controllers\Api\ProductController::class, 'update']);
 
     Route::get('/customers', [App\Http\Controllers\Api\CustomersController::class, 'index']);
@@ -68,6 +70,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/get-city-by-id/{id}', [App\Http\Controllers\Api\ProfileController::class, 'cityById']);
 
     Route::post('/get-cart', [App\Http\Controllers\Api\CartController::class, 'getCart']);
+    Route::post('/sync-cart', [App\Http\Controllers\Api\CartController::class, 'syncCart']);
     Route::post('/add-cart', [App\Http\Controllers\Api\CartController::class, 'addCart']);
     Route::post('/add-item-cart', [App\Http\Controllers\Api\CartController::class, 'addItemCart']);
     Route::post('/delete-cart', [App\Http\Controllers\Api\CartController::class, 'deleteCart']);
@@ -80,4 +83,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 Route::get('/category', [App\Http\Controllers\Api\CategoryController::class, 'index']);
 Route::get('/product', [App\Http\Controllers\Api\ProductController::class, 'index']);
+Route::get('/getproductbycategory/{id}', [App\Http\Controllers\Api\ProductController::class, 'getproductbycategory']);
+Route::get('/getproduct', [App\Http\Controllers\Api\ProductController::class, 'getProduct']);
+Route::get('/product-view/{id}', [App\Http\Controllers\Api\ProductController::class, 'view']);
+Route::get('/getrelatedproduct/{id}', [App\Http\Controllers\Api\ProductController::class, 'relatedproduct']);
 Route::post('/payments/notif', [App\Http\Controllers\Api\CartController::class, 'receive']);

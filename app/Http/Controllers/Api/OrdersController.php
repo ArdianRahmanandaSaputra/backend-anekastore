@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class OrdersController extends Controller
 {
     public function index(){
-        $orders = Order::all();
+        $orders = Order::where('status_pembayaran', 'SUCCESS')->get();
 
         foreach($orders as $o){
             $orders->customer = $o->user;
@@ -25,7 +25,7 @@ class OrdersController extends Controller
 
         $order->customer = $order->user;
         $order->user_detail = $order->user->detail;
-        
+
         $productArr = array();
         foreach($order->orderdetails as $d){
             array_push($productArr, array('amount' => $d->amount, 'item' => $d->product));
@@ -63,7 +63,7 @@ class OrdersController extends Controller
             foreach($d->orderdetails as $od){
                 $od->product_detail = $od->product;
                 array_push($orderDetail, $od);
-            }            
+            }
         }
         $order->detail = $orderDetail;
 

@@ -24,7 +24,7 @@ class CreateSnapTokenService extends Midtrans
         foreach($this->order->orderdetails as $d){
             array_push($item_details, array(
                 'id' => $d->id,
-                'price' => $d->product->price,
+                'price' => $d->product_price,
                 'quantity' => $d->amount,
                 'name' => $d->product->name,
             ));

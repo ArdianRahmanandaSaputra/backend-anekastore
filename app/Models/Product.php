@@ -23,4 +23,8 @@ class Product extends Model
     public function category(){
         return $this->belongsTo(Category::class, 'categori_id');
     }
+
+    public function discounts(){
+        return $this->hasMany(Discount::class, 'product_id');
+    }
 }
