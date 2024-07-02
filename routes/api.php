@@ -53,7 +53,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/product-save', [App\Http\Controllers\Api\ProductController::class, 'save']);
     Route::post('/product-delete', [App\Http\Controllers\Api\ProductController::class, 'delete']);
     Route::post('/product-update', [App\Http\Controllers\Api\ProductController::class, 'update']);
+    Route::get('/product-count', [App\Http\Controllers\Api\ProductController::class, 'getProductCount']);
 
+    Route::get('/customer-count', [App\Http\Controllers\Api\CustomersController::class, 'count']);
     Route::get('/customers', [App\Http\Controllers\Api\CustomersController::class, 'index']);
 
     Route::get('/payments', [App\Http\Controllers\Api\PaymentsController::class, 'index']);
@@ -63,6 +65,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/orders', [App\Http\Controllers\Api\OrdersController::class, 'index']);
     Route::get('/order-view/{id}', [App\Http\Controllers\Api\OrdersController::class, 'view']);
     Route::post('/order-update', [App\Http\Controllers\Api\OrdersController::class, 'update']);
+    Route::get('/order-count', [App\Http\Controllers\Api\OrdersController::class, 'getOrderCountByCurrentMonth']);
+    Route::get('/orders-sum', [App\Http\Controllers\Api\OrdersController::class, 'getTotalRevenueByCurrentMonth']);
+    Route::get('/order-count-by-month', [App\Http\Controllers\Api\OrdersController::class, 'getOrderCountByCurrentMonth']);
+    Route::get('/orders-sum-by-month', [App\Http\Controllers\Api\OrdersController::class, 'getTotalRevenueByCurrentMonth']);
+    Route::get('/order-count-by-year', [App\Http\Controllers\Api\OrdersController::class, 'getOrderCountByCurrentYear']);
+    Route::get('/order-sum-by-year', [App\Http\Controllers\Api\OrdersController::class, 'getTotalRevenueByCurrentYear']);
 
     Route::get('/get-province', [App\Http\Controllers\Api\ProfileController::class, 'province']);
     Route::get('/get-province-by-id/{id}', [App\Http\Controllers\Api\ProfileController::class, 'provinceById']);

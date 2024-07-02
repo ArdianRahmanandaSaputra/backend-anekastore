@@ -103,7 +103,7 @@ class CartController extends Controller
         $origin = $toko->city_code;
         $dest = $req->dest;
         $weight = $req->weight;
-        $apiKey = $this->apiKey; 
+        $apiKey = $this->apiKey;
 
         $curl = curl_init();
 
@@ -129,11 +129,11 @@ class CartController extends Controller
         return response()->json(['cost' => $cost->rajaongkir->results]);
     }
 
-    public function makeOrder(Request $req){
-        // return $req->total;
+        public function makeOrder(Request $req){
+        $user = Auth::user();
         $deliveryoption = $req->deliveryoption;
         $order = new Order;
-        $order->user_id = $req->user_id;
+        $order->user_id = $user->id;
         $order->status = 'Dalam Proses';
         // $order->total = 0;
 
@@ -202,14 +202,14 @@ class CartController extends Controller
 
     public function receive(){
         $callback = new CallbackService;
- 
+
         if ($callback->isSignatureKeyVerified()) {
             $notification = $callback->getNotification();
             $order = $callback->getOrder();
- 
+
             if ($callback->isSuccess()) {
                 $ord = Order::findOrFail($order->id);
-                $ord->status_pembayaran = "SUCCESS";                 
+                $ord->status_pembayaran = "SUCCESS";
                 $ord->save();
 
                 $cart = Cart::where('user_id', $ord->user_id)->get();
@@ -221,22 +221,22 @@ class CartController extends Controller
                             $product->stock -= $detail->amount;
                             $product->save();
                         }
-                    }                    
+                    }
                 }
             }
- 
+
             if ($callback->isExpire()) {
                 Order::where('id', $order->id)->update([
                     'status_pembayaran' => 'EXPIRED',
                 ]);
             }
- 
+
             if ($callback->isCancelled()) {
                 Invoice::where('id', $order->id)->update([
                     'status_pembayaran' => 'CANCEL',
                 ]);
             }
- 
+
             return response()
                 ->json([
                     'success' => true,

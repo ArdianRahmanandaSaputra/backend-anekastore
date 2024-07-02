@@ -13,13 +13,24 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index(){
-        $product = Product::paginate(5);
-        foreach($product as $p){
-            $p->category_name = $p->category->name;
+    public function index(Request $request) {
+    $query = Product::query();
+
+        // Handle search query
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
-        return response()->json(['product' => $product]);
+        // Paginate the results
+        $products = $query->paginate(5);
+
+        // Load category name for each product
+        foreach ($products as $product) {
+            $product->category_name = $product->category->name;
+        }
+
+        return response()->json(['products' => $products]);
     }
 
     public function getProduct(){
@@ -72,7 +83,7 @@ class ProductController extends Controller
             $disc->product_id = $product->id;
             $disc->constraint = $data->constraint;
             $disc->discounts = $data->discount;
-            $disc->description = $data->description; 
+            $disc->description = $data->description;
 
             $disc->save();
         }
@@ -97,11 +108,28 @@ class ProductController extends Controller
         return response()->json(['product' => $product]);
     }
 
-    public function getproductbycategory(Request $req){
-        $product = Product::where('categori_id', $req->id)->get();
+    // public function getproductbycategory(Request $req){
+    //     $product = Product::where('categori_id', $req->id)->get();
 
-        return response()->json(['product' => $product]);
+    //     return response()->json(['product' => $product]);
+    // }
+
+    public function getproductbycategory(Request $req){
+    $product = Product::where('categori_id', $req->id)->get();
+    $orderDetail = OrderDetail::all();
+
+    foreach ($product as &$p) {
+        $p->terjual = 0;
+        foreach ($orderDetail as $od) {
+            if ($od->product_id == $p->id) {
+                $p->terjual += intval($od->amount);
+            }
+        }
     }
+
+    return response()->json(['product' => $product]);
+}
+
 
     public function update(Request $req){
         $disc = json_decode($req->discount);
@@ -131,13 +159,13 @@ class ProductController extends Controller
         $product->save();
 
         $discounts = Discount::where('product_id', $product->id)->delete();
-        
+
         foreach ($disc as $index => $data) {
             $disc = new Discount;
             $disc->product_id = $product->id;
             $disc->constraint = $data->constraint;
             $disc->discounts = $data->discount;
-            $disc->description = $data->description; 
+            $disc->description = $data->description;
 
             $disc->save();
         }
@@ -149,8 +177,16 @@ class ProductController extends Controller
     public function relatedproduct(Request $req){
         $product = Product::findOrFail($req->id);
         $relatedProduct = Product::where('categori_id', $product->categori_id)->get();
-        
-        
+
+
         return response()->json(['relatedProduct' => $relatedProduct]);
     }
+
+
+    //Tambahan
+    public function getProductCount() {
+    $productCount = Product::count();
+    return response()->json(['product_count' => $productCount]);
+    }
+
 }

@@ -57,16 +57,89 @@ class OrdersController extends Controller
     public function orderByCustomer(){
         $user = Auth::user()->id;
 
-        $order = Order::where('user_id', $user)->get();
-        $orderDetail = [];
-        foreach($order as $d){
-            foreach($d->orderdetails as $od){
-                $od->product_detail = $od->product;
-                array_push($orderDetail, $od);
-            }
-        }
-        $order->detail = $orderDetail;
+        $orders = Order::with(['orderdetails', 'shipment'])
+                       ->where('user_id', $user)
+                       ->orderBy('created_at', 'desc')  // Menambahkan pengurutan descending berdasarkan tanggal pembuatan
+                       ->get();
 
-        return response()->json(['order' => $order]);
+        $formattedOrders = $orders->map(function ($order) {
+            $order->detail = $order->orderdetails->map(function ($orderdetail) {
+                $orderdetail->product_detail = $orderdetail->product;
+                return $orderdetail;
+            });
+            // Jika ada shipment, tambahkan informasi price ke dalam hasil
+            if ($order->shipment) {
+                $order->price = $order->shipment->price;
+            }
+            return $order;
+        });
+
+        return response()->json(['order' => $orders]);
+    }
+
+
+
+    //Tambahan
+    public function getOrderCountByCurrentMonth() {
+    $currentMonth = date('m');
+    $currentYear = date('Y');
+
+    $orderCount = Order::where('status_pembayaran', 'SUCCESS')
+        ->whereYear('created_at', $currentYear)
+        ->whereMonth('created_at', $currentMonth)
+        ->count();
+
+    return response()->json(['order_count' => $orderCount]);
+    }
+
+    public function getTotalRevenueByCurrentMonth() {
+        $currentMonth = date('m');
+        $currentYear = date('Y');
+
+        $totalRevenue = Order::where('status_pembayaran', 'SUCCESS')
+            ->whereYear('created_at', $currentYear)
+            ->whereMonth('created_at', $currentMonth)
+            ->sum('total');
+
+        $totalShippingCost = Shipment::whereYear('created_at', $currentYear)
+            ->whereMonth('created_at', $currentMonth)
+            ->sum('price');
+
+        $netRevenue = $totalRevenue - $totalShippingCost;
+
+        return response()->json([
+            'total_revenue' => $totalRevenue,
+            'total_shipping_cost' => $totalShippingCost,
+            'net_revenue' => $netRevenue
+        ]);
+    }
+
+    public function getOrderCountByCurrentYear() {
+    $currentYear = date('Y');
+
+    $orderCount = Order::where('status_pembayaran', 'SUCCESS')
+        ->whereYear('created_at', $currentYear)
+        ->count();
+
+    return response()->json(['order_count' => $orderCount]);
+    }
+
+    public function getTotalRevenueByCurrentYear() {
+        $currentYear = date('Y');
+
+        $totalRevenue = Order::where('status_pembayaran', 'SUCCESS')
+            ->whereYear('created_at', $currentYear)
+            ->sum('total');
+
+        $totalShippingCost = Shipment::whereYear('created_at', $currentYear)
+            ->sum('price');
+
+        $netRevenue = $totalRevenue - $totalShippingCost;
+
+        return response()->json([
+            'total_revenue' => $totalRevenue,
+            'total_shipping_cost' => $totalShippingCost,
+            'net_revenue' => $netRevenue
+        ]);
     }
 }

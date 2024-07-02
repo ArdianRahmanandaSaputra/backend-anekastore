@@ -16,4 +16,9 @@ class CustomersController extends Controller
 
         return response()->json(['customers' => $customers]);
     }
+
+    public function count(){
+        $customerCount = User::role('customer')->count();
+        return response()->json(['customer_count' => $customerCount]);
+    }
 }

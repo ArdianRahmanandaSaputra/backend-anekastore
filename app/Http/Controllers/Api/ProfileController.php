@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    private $apiKey = '36878ac22f61b56062bd8beae3e310ac';
+    private $apiKey = ' 767b05871730478c48922d030880d148';
 
     public function province(){
         $curl = curl_init();
@@ -108,54 +108,55 @@ class ProfileController extends Controller
     }
 
     public function update(Request $req){
-        $user = User::findOrFail($req->id);
+    $user = auth()->user(); // Mendapatkan pengguna yang sedang login
 
-        $user->name = $req->name;
-        $user->email = $req->email;
-        
-        if(!empty($req->password)){
-            $user->password = Hash::make($req->password);
+    $user->name = $req->name;
+    $user->email = $req->email;
+
+    if(!empty($req->password)){
+        $user->password = Hash::make($req->password);
+    }
+    $user->save();
+
+    $userDetail = UserDetail::where('user_id', $user->id)->first();
+
+    if($userDetail){
+        $userDetail->province = $req->province;
+        $userDetail->province_code = $req->province_code;
+        $userDetail->city = $req->city;
+        $userDetail->city_code = $req->city_code;
+        $userDetail->phone = $req->phone;
+        $userDetail->postal_code = $req->postal_code;
+        $userDetail->detail_address = $req->detail_address;
+        $userDetail->gender = $req->gender;
+    }else{
+        $userDetail = new UserDetail;
+        $userDetail->user_id = $user->id;
+        $userDetail->province = $req->province;
+        $userDetail->province_code = $req->province_code;
+        $userDetail->city = $req->city;
+        $userDetail->city_code = $req->city_code;
+        $userDetail->phone = $req->phone;
+        $userDetail->postal_code = $req->postal_code;
+        $userDetail->detail_address = $req->detail_address;
+        $userDetail->gender = $req->gender;
+    }
+
+    if($req->hasFile('photo')){
+        $validatedData = $req->validate([
+            'photo' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+        ]);
+        if(File::exists('uploads/user/' . $userDetail->photo)) {
+            File::delete('uploads/user/' . $userDetail->photo);
         }
-        $user->save();
 
-        $userDetail = UserDetail::where('user_id', $req->id)->first();
-
-        if($userDetail){
-            $userDetail->province = $req->province;
-            $userDetail->province_code = $req->province_code;
-            $userDetail->city = $req->city;
-            $userDetail->city_code = $req->city_code;
-            $userDetail->phone = $req->phone;
-            $userDetail->postal_code = $req->postal_code;
-            $userDetail->detail_address = $req->detail_address;
-            $userDetail->gender = $req->gender;
-        }else{
-            $userDetail = new UserDetail;
-            $userDetail->user_id = $req->id;
-            $userDetail->province = $req->province;
-            $userDetail->province_code = $req->province_code;
-            $userDetail->city = $req->city;
-            $userDetail->city_code = $req->city_code;
-            $userDetail->phone = $req->phone;
-            $userDetail->postal_code = $req->postal_code;
-            $userDetail->detail_address = $req->detail_address;
-            $userDetail->gender = $req->gender;
-        }
-
-        if($req->hasFile('photo')){
-            $validatedData = $req->validate([
-                'photo' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
-            ]);
-            if(File::exists('uploads/user/' . $userDetail->photo)) {
-                File::delete('uploads/user/' . $userDetail->photo);
-            }
-
-            $foto = $req->file('photo')->getClientOriginalName();
-            $path = $req->file('photo')->move('uploads/user/' , $user->id . $foto);
-            $userDetail->photo = $user->id . $foto;
-        }
+        $foto = $req->file('photo')->getClientOriginalName();
+        $path = $req->file('photo')->move('uploads/user/' , $user->id . $foto);
+        $userDetail->photo = $user->id . $foto;
+    }
         $userDetail->save();
 
         return response()->json(['message' => 'profile successfully updated']);
     }
+
 }
